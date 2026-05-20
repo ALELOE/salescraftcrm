@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       lead: typeof lead
     }
     customer = body.customer
-    lead = body.lead
+    lead = { ...body.lead, source: body.lead.source ?? 'manuell' }
   }
 
   // 1. Create customer
