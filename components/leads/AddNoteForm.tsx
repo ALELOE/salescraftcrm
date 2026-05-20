@@ -2,12 +2,25 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { ActivityType } from '@/lib/types'
+
+const INPUT: React.CSSProperties = {
+  fontFamily: 'inherit', fontSize: 13, padding: '8px 10px',
+  borderRadius: 4, border: '1px solid #ececec', background: '#fff',
+  color: '#0a0a0a', width: '100%', outline: 'none', letterSpacing: '-0.005em',
+  transition: 'border-color 150ms',
+}
+
+const SELECT_STYLE: React.CSSProperties = {
+  ...{ fontFamily: 'inherit', fontSize: 13, padding: '8px 28px 8px 10px', borderRadius: 4, border: '1px solid #ececec', background: '#fff', color: '#0a0a0a', width: '100%', outline: 'none', letterSpacing: '-0.005em', appearance: 'none', cursor: 'pointer' },
+  backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")`,
+  backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+}
+
+const LABEL: React.CSSProperties = {
+  fontSize: 12, fontWeight: 500, color: '#525252', display: 'block', marginBottom: 6,
+}
 
 interface AddNoteFormProps {
   leadId: string
@@ -35,7 +48,7 @@ export default function AddNoteForm({ leadId, userId, onAdded }: AddNoteFormProp
     })
 
     if (error) {
-      toast.error('Fehler beim Speichern der Notiz')
+      toast.error('Fehler beim Speichern')
     } else {
       toast.success('Notiz hinzugefügt')
       setNote('')
@@ -46,34 +59,55 @@ export default function AddNoteForm({ leadId, userId, onAdded }: AddNoteFormProp
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="space-y-1.5">
-        <Label>Typ</Label>
-        <Select value={type} onValueChange={(v) => setType(v as ActivityType)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="notiz">Notiz</SelectItem>
-            <SelectItem value="anruf">Anruf</SelectItem>
-            <SelectItem value="email">E-Mail</SelectItem>
-          </SelectContent>
-        </Select>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div>
+        <label style={LABEL}>Typ</label>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value as ActivityType)}
+          style={SELECT_STYLE}
+          onFocus={(e) => { e.target.style.borderColor = '#0a0a0a' }}
+          onBlur={(e) => { e.target.style.borderColor = '#ececec' }}
+        >
+          <option value="notiz">Notiz</option>
+          <option value="anruf">Anruf</option>
+          <option value="email">E-Mail</option>
+        </select>
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Anmerkung</Label>
-        <Textarea
+      <div>
+        <label style={LABEL}>Anmerkung</label>
+        <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Notiz eingeben..."
+          placeholder="Notiz eingeben…"
           rows={3}
+          style={{
+            ...INPUT,
+            resize: 'vertical',
+            minHeight: 72,
+            lineHeight: 1.5,
+            padding: '10px 12px',
+          }}
+          onFocus={(e) => { e.target.style.borderColor = '#0a0a0a' }}
+          onBlur={(e) => { e.target.style.borderColor = '#ececec' }}
         />
       </div>
 
-      <Button type="submit" disabled={loading || !note.trim()} className="w-full">
-        {loading ? 'Speichern...' : 'Notiz hinzufügen'}
-      </Button>
+      <button
+        type="submit"
+        disabled={loading || !note.trim()}
+        style={{
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+          background: loading || !note.trim() ? '#f5f5f5' : '#0a0a0a',
+          color: loading || !note.trim() ? '#a3a3a3' : '#fff',
+          border: 'none', borderRadius: 4,
+          padding: '7px 14px', cursor: loading || !note.trim() ? 'not-allowed' : 'pointer',
+          width: '100%', letterSpacing: '-0.005em',
+        }}
+      >
+        {loading ? 'Speichern…' : 'Notiz hinzufügen'}
+      </button>
     </form>
   )
 }

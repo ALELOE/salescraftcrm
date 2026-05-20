@@ -12,17 +12,18 @@ export default async function CRMLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from('users')
-    .select('name, email')
+    .select('name, email, role')
     .eq('id', user.id)
     .single()
 
   const userName = profile?.name ?? user.email?.split('@')[0] ?? 'Nutzer'
   const userEmail = profile?.email ?? user.email ?? ''
+  const userRole = profile?.role ?? 'sales'
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar userName={userName} userEmail={userEmail} />
-      <main className="lg:pl-64">
+    <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', minHeight: '100vh' }}>
+      <Sidebar userName={userName} userEmail={userEmail} userRole={userRole} />
+      <main style={{ minWidth: 0, background: 'var(--sc-bg)' }}>
         {children}
       </main>
     </div>

@@ -1,20 +1,35 @@
-import { Badge } from '@/components/ui/badge'
-import { LEAD_STATUS_COLORS, LEAD_STATUS_LABELS } from '@/lib/constants'
 import { LeadStatus } from '@/lib/types'
-import { cn } from '@/lib/utils'
+
+const STATUS_CONFIG: Record<LeadStatus, { color: string; label: string }> = {
+  neu:                  { color: '#3b82f6', label: 'Neu' },
+  kontaktiert:          { color: '#eab308', label: 'Kontaktiert' },
+  angebot_versendet:    { color: '#f97316', label: 'Angebot versendet' },
+  termin_geplant:       { color: '#a855f7', label: 'Termin geplant' },
+  angebot_aktualisiert: { color: '#6366f1', label: 'Angebot aktualisiert' },
+  gewonnen:             { color: '#16a34a', label: 'Gewonnen' },
+  verloren:             { color: '#dc2626', label: 'Verloren' },
+}
 
 interface LeadStatusBadgeProps {
   status: LeadStatus
-  className?: string
+  size?: number
 }
 
-export default function LeadStatusBadge({ status, className }: LeadStatusBadgeProps) {
+export default function LeadStatusBadge({ status, size = 8 }: LeadStatusBadgeProps) {
+  const cfg = STATUS_CONFIG[status] ?? { color: '#a3a3a3', label: status }
   return (
-    <Badge
-      variant="outline"
-      className={cn(LEAD_STATUS_COLORS[status], className)}
-    >
-      {LEAD_STATUS_LABELS[status]}
-    </Badge>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <span style={{
+        display: 'inline-block',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: cfg.color,
+        flexShrink: 0,
+      }} />
+      <span style={{ fontSize: 13, color: '#0a0a0a' }}>{cfg.label}</span>
+    </span>
   )
 }
+
+export { STATUS_CONFIG }

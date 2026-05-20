@@ -3,7 +3,11 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'SalesCraft — Dachblick CRM',
@@ -19,7 +23,17 @@ export default function RootLayout({
     <html lang="de">
       <body className={inter.className}>
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              fontSize: '13px',
+              border: '1px solid #ececec',
+              boxShadow: 'none',
+              borderRadius: '6px',
+            },
+          }}
+        />
       </body>
     </html>
   )

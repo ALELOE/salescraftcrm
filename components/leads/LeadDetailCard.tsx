@@ -1,7 +1,5 @@
 import { LeadWithCustomer } from '@/lib/types'
 import { MASSNAHME_LABELS } from '@/lib/constants'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
 
@@ -9,71 +7,100 @@ interface LeadDetailCardProps {
   lead: LeadWithCustomer
 }
 
+const SECTION_HEADER: React.CSSProperties = {
+  padding: '14px 20px',
+  borderBottom: '1px solid #ececec',
+  fontSize: 14,
+  fontWeight: 500,
+  color: '#525252',
+}
+
+const CARD: React.CSSProperties = {
+  background: '#fff',
+  border: '1px solid #ececec',
+  borderRadius: 6,
+}
+
+const ROW: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  padding: '10px 20px',
+  borderBottom: '1px solid #ececec',
+}
+
+const LABEL: React.CSSProperties = {
+  fontSize: 12,
+  color: '#a3a3a3',
+  fontWeight: 400,
+}
+
+const VALUE: React.CSSProperties = {
+  fontSize: 13,
+  color: '#0a0a0a',
+}
+
 export default function LeadDetailCard({ lead }: LeadDetailCardProps) {
   const { customers } = lead
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Kundendaten</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div>
-            <span className="text-gray-500">Name</span>
-            <p className="font-medium">{customers.vorname} {customers.nachname}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Kundendaten */}
+      <div style={CARD}>
+        <div style={SECTION_HEADER}>Kundendaten</div>
+        <div>
+          <div style={ROW}>
+            <span style={LABEL}>Name</span>
+            <span style={{ ...VALUE, fontWeight: 500 }}>{customers.vorname} {customers.nachname}</span>
           </div>
-          <div>
-            <span className="text-gray-500">E-Mail</span>
-            <p>
-              <a href={`mailto:${customers.email}`} className="text-blue-600 hover:underline">
-                {customers.email}
-              </a>
-            </p>
+          <div style={ROW}>
+            <span style={LABEL}>E-Mail</span>
+            <a href={`mailto:${customers.email}`} style={{ ...VALUE, color: '#0a0a0a', textDecoration: 'none' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}>
+              {customers.email}
+            </a>
           </div>
-          <div>
-            <span className="text-gray-500">Telefon</span>
-            <p>
-              <a href={`tel:${customers.phone}`} className="text-blue-600 hover:underline">
-                {customers.phone}
-              </a>
-            </p>
+          <div style={ROW}>
+            <span style={LABEL}>Telefon</span>
+            <a href={`tel:${customers.phone}`} style={{ ...VALUE, color: '#0a0a0a', textDecoration: 'none' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none' }}>
+              {customers.phone}
+            </a>
           </div>
-          <div>
-            <span className="text-gray-500">PLZ / Stadt</span>
-            <p>{customers.plz} {customers.city}</p>
+          <div style={{ ...ROW, borderBottom: 'none' }}>
+            <span style={LABEL}>PLZ / Stadt</span>
+            <span style={VALUE}>{customers.plz} {customers.city}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Fenster Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500">Maßnahme</span>
-            <Badge variant="outline">
-              {MASSNAHME_LABELS[lead.massnahme]}
-            </Badge>
+      {/* Fenster Details */}
+      <div style={CARD}>
+        <div style={SECTION_HEADER}>Fenster Details</div>
+        <div>
+          <div style={ROW}>
+            <span style={LABEL}>Maßnahme</span>
+            <span style={VALUE}>{MASSNAHME_LABELS[lead.massnahme]}</span>
           </div>
-          <div>
-            <span className="text-gray-500">Anzahl Fenster</span>
-            <p className="font-medium">{lead.anzahl_fenster}</p>
+          <div style={ROW}>
+            <span style={LABEL}>Anzahl Fenster</span>
+            <span style={{ ...VALUE, fontWeight: 500 }}>{lead.anzahl_fenster}</span>
           </div>
 
           {lead.massnahme === 'austausch' && (
             <>
               {lead.typenschild && (
-                <div>
-                  <span className="text-gray-500">Typenschild</span>
-                  <p>{lead.typenschild}</p>
+                <div style={ROW}>
+                  <span style={LABEL}>Typenschild</span>
+                  <span style={VALUE}>{lead.typenschild}</span>
                 </div>
               )}
               {(lead.fenster_breite_cm || lead.fenster_hoehe_cm) && (
-                <div>
-                  <span className="text-gray-500">Maße (B × H)</span>
-                  <p>{lead.fenster_breite_cm} × {lead.fenster_hoehe_cm} cm</p>
+                <div style={ROW}>
+                  <span style={LABEL}>Maße (B × H)</span>
+                  <span style={VALUE}>{lead.fenster_breite_cm} × {lead.fenster_hoehe_cm} cm</span>
                 </div>
               )}
             </>
@@ -82,63 +109,66 @@ export default function LeadDetailCard({ lead }: LeadDetailCardProps) {
           {lead.massnahme === 'neueinbau' && (
             <>
               {(lead.rohbau_breite_cm || lead.rohbau_hoehe_cm) && (
-                <div>
-                  <span className="text-gray-500">Rohbaumaß (B × H)</span>
-                  <p>{lead.rohbau_breite_cm} × {lead.rohbau_hoehe_cm} cm</p>
+                <div style={ROW}>
+                  <span style={LABEL}>Rohbaumaß (B × H)</span>
+                  <span style={VALUE}>{lead.rohbau_breite_cm} × {lead.rohbau_hoehe_cm} cm</span>
                 </div>
               )}
               {lead.dachneigung && (
-                <div>
-                  <span className="text-gray-500">Dachneigung</span>
-                  <p>{lead.dachneigung}</p>
+                <div style={ROW}>
+                  <span style={LABEL}>Dachneigung</span>
+                  <span style={VALUE}>{lead.dachneigung}</span>
                 </div>
               )}
             </>
           )}
 
-          <div>
-            <span className="text-gray-500">Zubehör</span>
+          <div style={ROW}>
+            <span style={LABEL}>Zubehör</span>
             {lead.zubehoer && lead.zubehoer.length > 0 ? (
-              <ul className="mt-1 space-y-1">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {lead.zubehoer.map((item, i) => (
-                  <li key={i} className="text-gray-700">• {item}</li>
+                  <span key={i} style={VALUE}>{item}</span>
                 ))}
-              </ul>
+              </div>
             ) : (
-              <p className="text-gray-400">Kein Zubehör</p>
+              <span style={{ ...VALUE, color: '#a3a3a3' }}>Kein Zubehör</span>
             )}
           </div>
 
           {lead.anmerkungen && (
-            <div>
-              <span className="text-gray-500">Anmerkungen</span>
-              <p className="text-gray-700 mt-1">{lead.anmerkungen}</p>
+            <div style={ROW}>
+              <span style={LABEL}>Anmerkungen</span>
+              <span style={{ ...VALUE, lineHeight: 1.5 }}>{lead.anmerkungen}</span>
             </div>
           )}
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Lead Info</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
+          {!lead.anmerkungen && !lead.zubehoer?.length && !lead.typenschild && (
+            <div style={{ height: 4 }} />
+          )}
+        </div>
+      </div>
+
+      {/* Lead Info */}
+      <div style={CARD}>
+        <div style={SECTION_HEADER}>Lead Info</div>
+        <div>
           {lead.source && (
-            <div>
-              <span className="text-gray-500">Quelle</span>
-              <p>{lead.source}</p>
+            <div style={ROW}>
+              <span style={LABEL}>Quelle</span>
+              <span style={VALUE}>{lead.source}</span>
             </div>
           )}
-          <div>
-            <span className="text-gray-500">Erstellt am</span>
-            <p>{format(new Date(lead.created_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr</p>
+          <div style={ROW}>
+            <span style={LABEL}>Erstellt am</span>
+            <span style={VALUE}>{format(new Date(lead.created_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr</span>
           </div>
-          <div>
-            <span className="text-gray-500">Zuletzt geändert</span>
-            <p>{format(new Date(lead.updated_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr</p>
+          <div style={{ ...ROW, borderBottom: 'none' }}>
+            <span style={LABEL}>Zuletzt geändert</span>
+            <span style={VALUE}>{format(new Date(lead.updated_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

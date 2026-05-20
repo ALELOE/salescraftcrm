@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { LeadWithCustomer, ActivityWithUser, LeadStatus, User } from '@/lib/types'
@@ -12,13 +11,35 @@ import LeadStatusBadge from '@/components/leads/LeadStatusBadge'
 import ActivityTimeline from '@/components/leads/ActivityTimeline'
 import AddNoteForm from '@/components/leads/AddNoteForm'
 import AppointmentForm from '@/components/appointments/AppointmentForm'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, FileText, Calendar } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { FileText, Calendar } from 'lucide-react'
+
+const BTN_GHOST: React.CSSProperties = {
+  fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+  background: 'transparent', color: '#0a0a0a',
+  border: '1px solid #ececec', borderRadius: 4,
+  padding: '7px 14px', cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 6,
+  textDecoration: 'none', letterSpacing: '-0.005em',
+}
+
+const SELECT_STYLE: React.CSSProperties = {
+  fontFamily: 'inherit', fontSize: 13, padding: '8px 28px 8px 10px',
+  borderRadius: 4, border: '1px solid #ececec', background: '#fff',
+  color: '#0a0a0a', letterSpacing: '-0.005em', outline: 'none',
+  appearance: 'none', width: '100%', cursor: 'pointer',
+  backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")`,
+  backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+}
+
+const CARD: React.CSSProperties = {
+  background: '#fff', border: '1px solid #ececec', borderRadius: 6,
+}
+
+const CARD_HEADER: React.CSSProperties = {
+  padding: '14px 20px', borderBottom: '1px solid #ececec',
+  fontSize: 14, fontWeight: 500, color: '#525252',
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+}
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -101,10 +122,12 @@ export default function LeadDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8 space-y-4">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)}
+      <div style={{ padding: 32 }}>
+        <div style={{ height: 40, background: '#f5f5f5', borderRadius: 4, marginBottom: 24, width: 240 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} style={{ height: 280, background: '#f5f5f5', borderRadius: 6 }} />
+          ))}
         </div>
       </div>
     )
@@ -112,7 +135,7 @@ export default function LeadDetailPage() {
 
   if (!lead) {
     return (
-      <div className="p-6 lg:p-8 text-center text-gray-500">
+      <div style={{ padding: 32, textAlign: 'center', color: '#a3a3a3', fontSize: 13 }}>
         Lead nicht gefunden
       </div>
     )
@@ -122,172 +145,172 @@ export default function LeadDetailPage() {
 
   return (
     <div>
-      <div className="bg-white border-b px-6 lg:px-8 py-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Zurück
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-gray-900">
-              {lead.customers.vorname} {lead.customers.nachname}
-            </h1>
-            <p className="text-sm text-gray-500">{lead.customers.plz} · Lead #{id.substring(0, 8)}</p>
-          </div>
-          <LeadStatusBadge status={lead.status} />
+      {/* Page topbar */}
+      <header style={{
+        height: 48, background: '#fff', borderBottom: '1px solid #ececec',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 32px', position: 'sticky', top: 0, zIndex: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+          <button
+            onClick={() => router.back()}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#0a0a0a' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#a3a3a3' }}
+          >
+            Leads
+          </button>
+          <span style={{ color: '#a3a3a3' }}>/</span>
+          <span style={{ color: '#0a0a0a', fontWeight: 500 }}>
+            {lead.customers.vorname} {lead.customers.nachname}
+          </span>
         </div>
-      </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <a href={`/leads/${id}/angebot`} style={{ ...BTN_GHOST, fontSize: 13 }}>
+            <FileText size={14} />
+            Angebot erstellen
+          </a>
+          <button
+            style={{ ...BTN_GHOST, fontSize: 13 }}
+            onClick={() => setAppointmentOpen(true)}
+          >
+            <Calendar size={14} />
+            Termin vereinbaren
+          </button>
+        </div>
+      </header>
 
-      <div className="p-6 lg:p-8">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Column 1 — Customer & Lead Details */}
-          <div>
-            <LeadDetailCard lead={lead} />
+      <div style={{ padding: 32 }}>
+        {/* Stepper */}
+        <div style={{ background: '#fff', border: '1px solid #ececec', borderRadius: 6, marginBottom: 20 }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #ececec', fontSize: 14, fontWeight: 500, color: '#525252', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>Pipeline</span>
+            <LeadStatusBadge status={lead.status} />
           </div>
-
-          {/* Column 2 — Pipeline & Actions */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Pipeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {PIPELINE_STEPS.map((step, index) => {
-                    const isDone = currentStepIndex > index
-                    const isCurrent = lead.status === step
-                    const isLost = lead.status === 'verloren'
-
-                    return (
-                      <div key={step} className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
-                            isCurrent && !isLost ? 'bg-blue-600 text-white' :
-                            isDone ? 'bg-green-500 text-white' :
-                            'bg-gray-200 text-gray-400'
-                          )}
-                        >
-                          {isDone ? '✓' : index + 1}
-                        </div>
-                        <span
-                          className={cn(
-                            'text-sm',
-                            isCurrent ? 'font-semibold text-blue-700' :
-                            isDone ? 'text-green-700' : 'text-gray-400'
-                          )}
-                        >
-                          {LEAD_STATUS_LABELS[step]}
-                        </span>
-                      </div>
-                    )
-                  })}
-
-                  {lead.status === 'verloren' && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold shrink-0">✗</div>
-                      <span className="text-sm font-semibold text-red-600">Verloren</span>
+          <div style={{ padding: '16px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
+              {PIPELINE_STEPS.map((step, i) => {
+                const done = i < currentStepIndex
+                const isCur = step === lead.status
+                return (
+                  <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1, position: 'relative' }}>
+                    <div style={{
+                      width: 12, height: 12, borderRadius: '50%', zIndex: 1,
+                      border: `1px solid ${(done || isCur) ? '#0a0a0a' : '#d4d4d4'}`,
+                      background: (done || isCur) ? '#0a0a0a' : '#fff',
+                      boxShadow: isCur ? '0 0 0 4px rgba(10,10,10,0.08)' : 'none',
+                    }} />
+                    {i < PIPELINE_STEPS.length - 1 && (
+                      <div style={{
+                        position: 'absolute', top: 6, left: '50%', right: '-50%', height: 1, zIndex: 0,
+                        background: done ? '#0a0a0a' : '#d4d4d4',
+                      }} />
+                    )}
+                    <div style={{
+                      fontSize: 11, textAlign: 'center', lineHeight: 1.3, maxWidth: 90,
+                      color: (done || isCur) ? '#0a0a0a' : '#a3a3a3',
+                      fontWeight: (isCur || done) ? 500 : 400,
+                    }}>
+                      {LEAD_STATUS_LABELS[step]}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Aktionen</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-1.5">
-                  <span className="text-sm text-gray-500">Status ändern</span>
-                  <Select
-                    value={lead.status}
-                    onValueChange={(v) => handleStatusChange(v as LeadStatus)}
-                    disabled={statusChanging}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LEAD_STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+        {/* Three-column layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px 320px', gap: 16, alignItems: 'start' }}>
+          {/* Col 1 — Customer & Lead Details */}
+          <LeadDetailCard lead={lead} />
 
-                <div className="space-y-1.5">
-                  <span className="text-sm text-gray-500">Zuweisen an</span>
-                  <Select
-                    value={lead.assigned_to ?? ''}
-                    onValueChange={handleAssign}
-                    disabled={assignChanging}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Nicht zugewiesen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((u) => (
-                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button asChild className="w-full" variant="outline">
-                  <Link href={`/leads/${id}/angebot`}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Angebot erstellen
-                  </Link>
-                </Button>
-
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => setAppointmentOpen(true)}
+          {/* Col 2 — Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={CARD}>
+              <div style={CARD_HEADER}>Status ändern</div>
+              <div style={{ padding: 16 }}>
+                <select
+                  value={lead.status}
+                  onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}
+                  disabled={statusChanging}
+                  style={SELECT_STYLE}
+                  onFocus={(e) => { e.target.style.borderColor = '#0a0a0a' }}
+                  onBlur={(e) => { e.target.style.borderColor = '#ececec' }}
                 >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Termin planen
-                </Button>
-              </CardContent>
-            </Card>
+                  {LEAD_STATUSES.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div style={CARD}>
+              <div style={CARD_HEADER}>Zugewiesen an</div>
+              <div style={{ padding: 16 }}>
+                <select
+                  value={lead.assigned_to ?? ''}
+                  onChange={(e) => handleAssign(e.target.value)}
+                  disabled={assignChanging}
+                  style={SELECT_STYLE}
+                  onFocus={(e) => { e.target.style.borderColor = '#0a0a0a' }}
+                  onBlur={(e) => { e.target.style.borderColor = '#ececec' }}
+                >
+                  <option value="">Nicht zugewiesen</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
-          {/* Column 3 — Activities */}
-          <div>
-            <Card className="h-full">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Aktivitäten</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ActivityTimeline activities={activities} />
-                <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Notiz hinzufügen</h4>
-                  <AddNoteForm
-                    leadId={id}
-                    userId={currentUserId}
-                    onAdded={fetchData}
-                  />
+          {/* Col 3 — Activities */}
+          <div style={CARD}>
+            <div style={CARD_HEADER}>Aktivitäten</div>
+            <div style={{ padding: 20 }}>
+              <ActivityTimeline activities={activities} />
+              <div style={{ borderTop: '1px solid #ececec', marginTop: activities.length > 0 ? 16 : 0, paddingTop: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: '#525252', marginBottom: 10 }}>
+                  Notiz hinzufügen
                 </div>
-              </CardContent>
-            </Card>
+                <AddNoteForm
+                  leadId={id}
+                  userId={currentUserId}
+                  onAdded={fetchData}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <Dialog open={appointmentOpen} onOpenChange={setAppointmentOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Termin planen</DialogTitle>
-          </DialogHeader>
-          <AppointmentForm
-            leadId={id}
-            userId={currentUserId}
-            onSaved={fetchData}
-            onClose={() => setAppointmentOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Appointment modal */}
+      {appointmentOpen && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.04)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setAppointmentOpen(false)}
+        >
+          <div
+            style={{ background: '#fff', border: '1px solid #ececec', borderRadius: 6, padding: 24, width: 400, maxWidth: '90vw' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, letterSpacing: '-0.01em' }}>
+              Termin vereinbaren
+            </div>
+            <AppointmentForm
+              leadId={id}
+              userId={currentUserId}
+              onSaved={() => { fetchData(); setAppointmentOpen(false) }}
+              onClose={() => setAppointmentOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

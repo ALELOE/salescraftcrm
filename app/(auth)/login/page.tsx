@@ -4,10 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,7 +14,6 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -33,59 +28,112 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4">
-            <span className="text-white font-bold text-2xl">D</span>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#fafafa',
+      padding: 24,
+    }}>
+      <div style={{
+        width: 360,
+        background: '#fff',
+        border: '1px solid #ececec',
+        borderRadius: 6,
+        padding: 32,
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em', color: '#0a0a0a' }}>
+            SalesCraft
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Dachblick</h1>
-          <p className="text-gray-500 mt-1">CRM — internes Vertriebstool</p>
+          <div style={{ marginTop: 6, fontSize: 12, color: '#a3a3a3' }}>
+            Dachblick CRM
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Anmelden</CardTitle>
-            <CardDescription>Melden Sie sich mit Ihren Zugangsdaten an</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">E-Mail-Adresse</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="max@dachblick.de"
-                  autoComplete="email"
-                  required
-                />
-              </div>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <Field label="E-Mail">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="max@dachblick.de"
+              autoComplete="email"
+              required
+            />
+          </Field>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Passwort</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
+          <Field label="Passwort">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </Field>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Anmelden...' : 'Anmelden'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-xs text-gray-400">
-          Powered by SalesCraft
-        </p>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              fontFamily: 'inherit',
+              fontSize: 13,
+              fontWeight: 500,
+              background: loading ? '#525252' : '#0a0a0a',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              padding: '9px 14px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              width: '100%',
+              letterSpacing: '-0.005em',
+              transition: 'background 150ms',
+            }}
+          >
+            {loading ? 'Anmelden…' : 'Anmelden'}
+          </button>
+        </form>
       </div>
     </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 500, color: '#525252' }}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      style={{
+        fontFamily: 'inherit',
+        fontSize: 13,
+        padding: '8px 10px',
+        borderRadius: 4,
+        border: '1px solid #ececec',
+        background: '#fff',
+        color: '#0a0a0a',
+        width: '100%',
+        letterSpacing: '-0.005em',
+        outline: 'none',
+        transition: 'border-color 150ms',
+      }}
+      onFocus={(e) => {
+        e.target.style.borderColor = '#0a0a0a'
+        props.onFocus?.(e)
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = '#ececec'
+        props.onBlur?.(e)
+      }}
+    />
   )
 }

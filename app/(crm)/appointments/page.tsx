@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
 import TopBar from '@/components/layout/TopBar'
-import { Badge } from '@/components/ui/badge'
 import { APPOINTMENT_TYPE_LABELS } from '@/lib/constants'
 import MarkCompleteButton from './MarkCompleteButton'
 import { AppointmentType } from '@/lib/types'
@@ -17,6 +16,25 @@ interface AppointmentRow {
   leads: { customers: { vorname: string; nachname: string } } | null
 }
 
+const TH: React.CSSProperties = {
+  textAlign: 'left',
+  fontSize: 11,
+  fontWeight: 500,
+  color: '#525252',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  padding: '12px 16px',
+  borderBottom: '1px solid #ececec',
+  whiteSpace: 'nowrap',
+}
+
+const TD: React.CSSProperties = {
+  padding: '14px 16px',
+  borderBottom: '1px solid #ececec',
+  fontSize: 13,
+  verticalAlign: 'middle',
+}
+
 export default async function AppointmentsPage() {
   const supabase = createClient()
 
@@ -26,7 +44,6 @@ export default async function AppointmentsPage() {
     .order('scheduled_at', { ascending: true })
 
   const appointments = (data ?? []) as AppointmentRow[]
-
   const upcoming = appointments.filter((a) => !a.completed_at)
   const completed = appointments.filter((a) => !!a.completed_at)
 
@@ -34,59 +51,65 @@ export default async function AppointmentsPage() {
     <div>
       <TopBar
         title="Termine"
-        subtitle={`${upcoming.length} anstehend · ${completed.length} abgeschlossen`}
+        subtitle={upcoming.length > 0 ? `${upcoming.length} anstehend` : undefined}
       />
 
-      <div className="p-6 lg:p-8 space-y-6">
-        {upcoming.length === 0 && (
-          <div className="text-center py-16 text-gray-500">
-            Keine Termine geplant
+      <div style={{ padding: 32 }}>
+        {upcoming.length === 0 && completed.length === 0 && (
+          <div style={{ padding: '36px 20px', textAlign: 'center', border: '1px dashed #ececec', borderRadius: 6, color: '#a3a3a3', fontSize: 13 }}>
+            Keine offenen Termine. Planen Sie einen über die Lead-Detailseite.
           </div>
         )}
 
         {upcoming.length > 0 && (
-          <div>
-            <h2 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">Anstehend</h2>
-            <div className="bg-white rounded-lg border overflow-x-auto">
-              <table className="w-full text-sm">
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
+              Anstehend
+            </div>
+            <div style={{ background: '#fff', border: '1px solid #ececec', borderRadius: 6, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Typ</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Kunde</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Datum & Zeit</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Adresse</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                    <th className="px-4 py-3"></th>
+                  <tr>
+                    <th style={TH}>Typ</th>
+                    <th style={TH}>Kunde</th>
+                    <th style={TH}>Datum & Zeit</th>
+                    <th style={TH}>Adresse</th>
+                    <th style={TH}></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {upcoming.map((appt) => (
-                    <tr key={appt.id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <Badge variant="outline">
-                          {APPOINTMENT_TYPE_LABELS[appt.type]}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {appt.leads?.customers
-                          ? `${appt.leads.customers.vorname} ${appt.leads.customers.nachname}`
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {format(new Date(appt.scheduled_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr
-                        <div className="text-xs text-gray-400">{appt.duration_minutes} Min.</div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{appt.location ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200" variant="outline">
-                          Offen
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <MarkCompleteButton appointmentId={appt.id} />
-                      </td>
-                    </tr>
-                  ))}
+                  {upcoming.map((appt, i) => {
+                    const isLast = i === upcoming.length - 1
+                    const tdStyle = isLast ? { ...TD, borderBottom: 'none' } : TD
+                    return (
+                      <tr key={appt.id} className="sc-row-hover">
+                        <td style={tdStyle}>
+                          <span style={{
+                            display: 'inline-block', fontSize: 11, fontWeight: 500,
+                            padding: '2px 7px', borderRadius: 2,
+                            border: '1px solid #ececec', color: '#525252', background: '#fafafa',
+                          }}>
+                            {APPOINTMENT_TYPE_LABELS[appt.type]}
+                          </span>
+                        </td>
+                        <td style={{ ...tdStyle, fontWeight: 500, color: '#0a0a0a' }}>
+                          {appt.leads?.customers
+                            ? `${appt.leads.customers.vorname} ${appt.leads.customers.nachname}`
+                            : '—'}
+                        </td>
+                        <td style={{ ...tdStyle, color: '#525252' }}>
+                          <div style={{ fontVariantNumeric: 'tabular-nums' }}>
+                            {format(new Date(appt.scheduled_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr
+                          </div>
+                          <div style={{ fontSize: 12, color: '#a3a3a3', marginTop: 1 }}>{appt.duration_minutes} Min.</div>
+                        </td>
+                        <td style={{ ...tdStyle, color: '#525252' }}>{appt.location ?? '—'}</td>
+                        <td style={{ ...tdStyle, paddingRight: 12 }}>
+                          <MarkCompleteButton appointmentId={appt.id} />
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -94,41 +117,52 @@ export default async function AppointmentsPage() {
         )}
 
         {completed.length > 0 && (
-          <div>
-            <h2 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">Abgeschlossen</h2>
-            <div className="bg-white rounded-lg border overflow-x-auto opacity-70">
-              <table className="w-full text-sm">
+          <div style={{ opacity: 0.65 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
+              Abgeschlossen
+            </div>
+            <div style={{ background: '#fff', border: '1px solid #ececec', borderRadius: 6, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Typ</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Kunde</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Datum & Zeit</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                  <tr>
+                    <th style={TH}>Typ</th>
+                    <th style={TH}>Kunde</th>
+                    <th style={TH}>Datum & Zeit</th>
+                    <th style={TH}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {completed.map((appt) => (
-                    <tr key={appt.id} className="border-b">
-                      <td className="px-4 py-3">
-                        <Badge variant="outline">
-                          {APPOINTMENT_TYPE_LABELS[appt.type]}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {appt.leads?.customers
-                          ? `${appt.leads.customers.vorname} ${appt.leads.customers.nachname}`
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {format(new Date(appt.scheduled_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge className="bg-green-100 text-green-800 border-green-200" variant="outline">
-                          Abgeschlossen
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
+                  {completed.map((appt, i) => {
+                    const isLast = i === completed.length - 1
+                    const tdStyle = isLast ? { ...TD, borderBottom: 'none' } : TD
+                    return (
+                      <tr key={appt.id}>
+                        <td style={tdStyle}>
+                          <span style={{
+                            display: 'inline-block', fontSize: 11, fontWeight: 500,
+                            padding: '2px 7px', borderRadius: 2,
+                            border: '1px solid #ececec', color: '#525252', background: '#fafafa',
+                          }}>
+                            {APPOINTMENT_TYPE_LABELS[appt.type]}
+                          </span>
+                        </td>
+                        <td style={{ ...tdStyle, fontWeight: 500, color: '#0a0a0a' }}>
+                          {appt.leads?.customers
+                            ? `${appt.leads.customers.vorname} ${appt.leads.customers.nachname}`
+                            : '—'}
+                        </td>
+                        <td style={{ ...tdStyle, color: '#525252', fontVariantNumeric: 'tabular-nums' }}>
+                          {format(new Date(appt.scheduled_at), 'dd.MM.yyyy HH:mm', { locale: de })} Uhr
+                        </td>
+                        <td style={tdStyle}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
+                            <span style={{ fontSize: 13, color: '#0a0a0a' }}>Abgeschlossen</span>
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
