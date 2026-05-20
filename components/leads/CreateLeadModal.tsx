@@ -17,7 +17,13 @@ const ZUBEHOER_OPTIONS = [
   'Insektenschutz',
 ]
 
-const QUELLEN = ['Website', 'Telefon', 'Empfehlung', 'Messe', 'Sonstiges']
+const QUELLEN: { label: string; value: string }[] = [
+  { label: 'Telefon', value: 'phone' },
+  { label: 'Website', value: 'website' },
+  { label: 'Empfehlung', value: 'referral' },
+  { label: 'Messe', value: 'trade_show' },
+  { label: 'Sonstiges', value: 'other' },
+]
 
 const INPUT: React.CSSProperties = {
   fontFamily: 'inherit', fontSize: 13, padding: '8px 10px',
@@ -80,7 +86,7 @@ export default function CreateLeadModal({ onClose, onCreated }: CreateLeadModalP
   // Lead fields
   const [massnahme, setMassnahme] = useState<'austausch' | 'neueinbau'>('austausch')
   const [anzahlFenster, setAnzahlFenster] = useState(1)
-  const [quelle, setQuelle] = useState('Telefon')
+  const [quelle, setQuelle] = useState('phone')
   const [assignedTo, setAssignedTo] = useState('')
 
   // Austausch-specific
@@ -230,7 +236,7 @@ export default function CreateLeadModal({ onClose, onCreated }: CreateLeadModalP
             </Field>
             <Field label="Quelle" half>
               <select value={quelle} onChange={(e) => setQuelle(e.target.value)} style={SELECT_STYLE} onFocus={onFocus} onBlur={onBlur}>
-                {QUELLEN.map((q) => <option key={q} value={q}>{q}</option>)}
+                {QUELLEN.map((q) => <option key={q.value} value={q.value}>{q.label}</option>)}
               </select>
             </Field>
             <Field label="Zugewiesen an" half>
