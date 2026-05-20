@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
-  // Verify the caller is authenticated
-  const supabaseUser = createServerClient()
-  const { data: { user } } = await supabaseUser.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Use service role to bypass RLS for the insert
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -92,7 +83,7 @@ export async function POST(req: NextRequest) {
   // 3. Log activity
   await supabase.from('activities').insert({
     lead_id: leadData.id,
-    user_id: user.id,
+    user_id: null,
     type: 'status_aenderung',
     note: 'Lead manuell angelegt',
   })
