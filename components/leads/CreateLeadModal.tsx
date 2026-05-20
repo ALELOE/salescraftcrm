@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@/lib/types'
+// createClient is used only to fetch the users list
 import { X } from 'lucide-react'
 
 const ZUBEHOER_OPTIONS = [
@@ -111,68 +112,48 @@ export default function CreateLeadModal({ onClose, onCreated }: CreateLeadModalP
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const supabase = createClient()
 
-    // 1. Create customer
-    const { data: customerData, error: customerError } = await supabase
-      .from('customers')
-      .insert({ vorname, nachname, email, phone: phone || null, plz, city: city || '' })
-      .select()
-      .single()
-
-    if (customerError) {
-      toast.error('Fehler beim Anlegen des Kunden. Bitte prüfen Sie die E-Mail-Adresse.')
-      setLoading(false)
-      return
-    }
-
-    // 2. Build lead insert
-    const leadInsert: Record<string, unknown> = {
-      customer_id: customerData.id,
-      status: 'neu',
-      source: quelle,
+    const leadPayload = {
       massnahme,
       anzahl_fenster: anzahlFenster,
+      source: quelle,
+      assigned_to: assignedTo || null,
       zubehoer,
       anmerkungen: anmerkungen || null,
-      assigned_to: assignedTo || null,
+      ...(massnahme === 'austausch'
+        ? {
+            typenschild: typenschild || null,
+            fenster_breite_cm: breite ? Number(breite) : null,
+            fenster_hoehe_cm: hoehe ? Number(hoehe) : null,
+          }
+        : {
+            rohbau_breite_cm: rohbauBreite ? Number(rohbauBreite) : null,
+            rohbau_hoehe_cm: rohbauHoehe ? Number(rohbauHoehe) : null,
+            dachneigung: dachneigung || null,
+          }),
     }
 
-    if (massnahme === 'austausch') {
-      leadInsert.typenschild = typenschild || null
-      leadInsert.fenster_breite_cm = breite ? Number(breite) : null
-      leadInsert.fenster_hoehe_cm = hoehe ? Number(hoehe) : null
-    } else {
-      leadInsert.rohbau_breite_cm = rohbauBreite ? Number(rohbauBreite) : null
-      leadInsert.rohbau_hoehe_cm = rohbauHoehe ? Number(rohbauHoehe) : null
-      leadInsert.dachneigung = dachneigung || null
-    }
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: { vorname, nachname, email, phone: phone || null, plz, city: city || '' },
+        lead: leadPayload,
+      }),
+    })
 
-    const { data: leadData, error: leadError } = await supabase
-      .from('leads')
-      .insert(leadInsert)
-      .select()
-      .single()
+    const json = await res.json()
 
-    if (leadError) {
-      toast.error('Fehler beim Anlegen des Leads.')
+    if (!res.ok) {
+      toast.error(json.error ?? 'Fehler beim Anlegen des Leads.')
       setLoading(false)
       return
     }
-
-    // 3. Log activity
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('activities').insert({
-      lead_id: leadData.id,
-      user_id: user?.id ?? null,
-      type: 'status_aenderung',
-      note: 'Lead manuell angelegt',
-    })
 
     toast.success(`Lead „${vorname} ${nachname}" angelegt.`)
     onCreated()
     onClose()
-    router.push(`/leads/${leadData.id}`)
+    router.push(`/leads/${json.lead_id}`)
   }
 
   return (
