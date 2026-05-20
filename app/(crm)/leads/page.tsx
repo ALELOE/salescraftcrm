@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { LeadWithCustomer } from '@/lib/types'
 import { LEAD_STATUSES } from '@/lib/constants'
 import LeadTable from '@/components/leads/LeadTable'
+import CreateLeadModal from '@/components/leads/CreateLeadModal'
 import TopBar from '@/components/layout/TopBar'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 
 const PAGE_SIZE = 20
 
@@ -24,6 +25,21 @@ const BTN_GHOST: React.CSSProperties = {
   alignItems: 'center',
   gap: 6,
   transition: 'background 150ms',
+}
+
+const BTN_PRIMARY: React.CSSProperties = {
+  fontFamily: 'inherit',
+  fontSize: 13,
+  fontWeight: 500,
+  background: '#0a0a0a',
+  color: '#fff',
+  border: '1px solid #0a0a0a',
+  borderRadius: 4,
+  padding: '7px 12px',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
 }
 
 const SELECT_STYLE: React.CSSProperties = {
@@ -51,6 +67,7 @@ export default function LeadsPage() {
   const [massnahmeFilter, setMassnahmeFilter] = useState<string>('alle')
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const fetchLeads = useCallback(async () => {
     setLoading(true)
@@ -92,12 +109,22 @@ export default function LeadsPage() {
       <TopBar
         title="Leads"
         subtitle={total > 0 ? `${total} Lead${total !== 1 ? 's' : ''}` : undefined}
+        actions={
+          <button
+            style={BTN_PRIMARY}
+            onClick={() => setCreateOpen(true)}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#000' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#0a0a0a' }}
+          >
+            <Plus size={14} />
+            Neuer Lead
+          </button>
+        }
       />
 
       <div style={{ padding: 32 }}>
         {/* Filter row */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Search */}
           <div style={{ position: 'relative', flex: '1 1 240px' }}>
             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#a3a3a3', pointerEvents: 'none' }} />
             <input
@@ -144,7 +171,6 @@ export default function LeadsPage() {
         <div style={{ background: '#fff', border: '1px solid #ececec', borderRadius: 6 }}>
           <LeadTable leads={leads} loading={loading} />
 
-          {/* Pagination footer */}
           {totalPages > 1 && (
             <div style={{
               padding: '12px 16px',
@@ -182,6 +208,13 @@ export default function LeadsPage() {
           )}
         </div>
       </div>
+
+      {createOpen && (
+        <CreateLeadModal
+          onClose={() => setCreateOpen(false)}
+          onCreated={fetchLeads}
+        />
+      )}
     </div>
   )
 }
